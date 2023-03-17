@@ -1,0 +1,65 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\code\\+f#\\neume\\neume.fsproj": {}
+  },
+  "projects": {
+    "D:\\code\\+f#\\neume\\neume.fsproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\code\\+f#\\neume\\neume.fsproj",
+        "projectName": "neume",
+        "projectPath": "D:\\code\\+f#\\neume\\neume.fsproj",
+        "packagesPath": "C:\\Users\\Ian Remsen\\.nuget\\packages\\",
+        "outputPath": "D:\\code\\+f#\\neume\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Ian Remsen\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net7.0"
+        ],
+        "sources": {
+          "C:\\Program Files\\dotnet\\sdk\\7.0.102\\FSharp\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net7.0": {
+            "targetAlias": "net7.0",
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "dependencies": {
+            "FSharp.Core": {
+              "include": "Runtime, Compile, Build, Native, Analyzers, BuildTransitive",
+              "target": "Package",
+              "version": "[7.0.0, )",
+              "generatePathProperty": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

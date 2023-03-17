@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "JqjEPYYyrOpLPBV9YEJkm9/AWHaRLx3DLFhB3nKiQtvuDoWd+vXaClU+Kfb/fubHW66dT7u3lr40gfHZfDGKzQ==",
+  "success": true,
+  "projectFilePath": "D:\\code\\+f#\\neume\\neume.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Ian Remsen\\.nuget\\packages\\fsharp.core\\7.0.0\\fsharp.core.7.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
