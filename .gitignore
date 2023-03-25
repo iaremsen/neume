@@ -1,6 +1,18 @@
-bin/*
-~*.*
-~*
-#*
-#*.*
-obj/*
+## emacs
+*~
+\#*\#
+auto-save-list
+.\#*
+
+
+## fsharp
+lib/debug
+lib/release
+Debug
+*.suo
+*.user
+obj
+bin
+/build/
+*.exe
+.fake

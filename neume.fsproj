@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <Compile Include="Program.fs" />
+    <Compile Include="Signal.fs" />
+    <Compile Include="Music.fs" />
   </ItemGroup>
 
 </Project>
