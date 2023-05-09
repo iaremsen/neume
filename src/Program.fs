@@ -7,6 +7,10 @@ open Neume.Signal
 open Neume.Music
 open Neume.TUI
 
+(***
+       The entry point for the software.
+***)
+
 let fundamental : Freq = 440.<hertz>;
 
 let min2 = Ratio.FromIntFraction(16,15)
