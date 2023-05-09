@@ -1,14 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Program.fs" />
-    <Compile Include="Signal.fs" />
-    <Compile Include="Music.fs" />
+    <Compile Include="src/Signal.fs" />
+    <Compile Include="src/Music.fs" />
+    <Compile Include="src/Music/Tonality/CommonPractice.fs" />
+    <Compile Include="src/Music/Tonality/Specialized.fs" />
+    <Compile Include="src/TUI.fs" />
+    <Compile Include="src/Program.fs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FSharp.Stats" Version="0.4.11" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0" />
+  </ItemGroup>
 </Project>
