@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Compile Include="src/Signal.fs" />
-    <Compile Include="src/Music.fs" />
+    <Compile Include="src/Music/Music.fs" />
     <Compile Include="src/Music/Tonality/CommonPractice.fs" />
     <Compile Include="src/Music/Tonality/Specialized.fs" />
     <Compile Include="src/TUI.fs" />

@@ -10,7 +10,7 @@ open Microsoft.FSharp.Data.UnitSystems.SI.UnitNames
 
 let tau = 2.0 * Math.PI
 
-type sampleRate = float<hertz>
+type sampleRate = decimal<hertz>
 type Freq = float<hertz>
 
 type AudioSignal = float seq * sampleRate
