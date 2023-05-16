@@ -24,6 +24,11 @@ let neu7 = 11M / 6M
 
 let tun : Tuning = [min2; maj3; per4; dim6; neu7; octave]
 
+let names = ["Ionian";"Dorian";"Phrygian";"Lydian";"Mixolydian";"Aeolian";"Locrian"]
 
 // printfn $"%A{IntervalTable tun}"
-printfn $"%X{BinEnc ionian}"
+for i in 0..(ionian.Count - 1) do
+    let mode = ionian >>> i
+    printfn "%s:%X %A" names[i] (BinEnc mode) mode
+
+printfn "%A" (PrimeMode ionian)

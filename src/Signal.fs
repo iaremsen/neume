@@ -10,10 +10,10 @@ open Microsoft.FSharp.Data.UnitSystems.SI.UnitNames
 
 let tau = 2.0 * Math.PI
 
-type sampleRate = decimal<hertz>
+type SampleRate = decimal<hertz>
 type Freq = float<hertz>
 
-type AudioSignal = float seq * sampleRate
+type AudioSignal = float seq * SampleRate
 
 // let PulseWave (f : Freq) (length : float<second>) (phase : float) =
 //     let inflection = (f * phase) - (f / 2) >> Math.Abs
