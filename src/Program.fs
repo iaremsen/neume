@@ -26,12 +26,12 @@ let tun : Tuning = [min2; maj3; per4; dim6; neu7; octave]
 
 let names = ["Ionian";"Dorian";"Phrygian";"Lydian";"Mixolydian";"Aeolian";"Locrian"]
 
-// printfn $"%A{IntervalTable tun}"
-for i in 0..(ionian.Count - 1) do
-    let mode = ionian >>> i
-    printfn "%s:%X %A" names[i] (BinEnc mode) mode
-
 let DFlat : PitchClass = ("D", Flat)
+let CFlat : PitchClass = ("C", Flat)
+let FSharp : PitchClass = ("F", Sharp)
+let BNat : PitchClass = ("B", Natural)
 
-printfn "%A" (PrimeMode ionian)
-printfn "%A" (KeyMapping DFlat ionian anglo)
+printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
+printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
+printfn "F♯ Lydian: %A" (KeyMapping FSharp (ionian >>> 3) anglo)
+printfn "B Dorian: %A" (KeyMapping BNat (ionian >>> 1) anglo)

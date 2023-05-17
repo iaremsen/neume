@@ -70,13 +70,13 @@ type Alphabet = { Letterforms : Letterform List;
                   Spacing : Scale }
 type PitchClass = Letterform * Accidental
 
-let (>@>) (lf : Letterform List) (offset : int) : Letterform List =
+let (>@>) (lf : List<'a>) (offset : int) : List<'a> =
     let index = (offset % lf.Length)
     match index with
         | 0 -> lf
         | _ -> List.skip index lf @ List.take index lf
 
-let (<@<) (lf : List) (offset : int) : List = lf >@> lf.Length - offset
+let (<@<) lf (offset : int) = lf >@> lf.Length - offset
 
 let DblFlat : Accidental = (-2, "𝄫")
 let Flat : Accidental = (-1, "♭")
