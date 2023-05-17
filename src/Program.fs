@@ -31,4 +31,7 @@ for i in 0..(ionian.Count - 1) do
     let mode = ionian >>> i
     printfn "%s:%X %A" names[i] (BinEnc mode) mode
 
+let DFlat : PitchClass = ("D", Flat)
+
 printfn "%A" (PrimeMode ionian)
+printfn "%A" (KeyMapping DFlat ionian anglo)
