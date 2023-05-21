@@ -106,9 +106,8 @@ let KeyMapping (tonic : PitchClass) (s : Scale) (a : Alphabet) =
     // if `tonic` has an accidental, set it (sharp/flat)
     // compare `s` to `a`’s scale, use difference to decide further accidentals (i.e. in D♭ major, D♭ ⇢ E♭ ⇢ F♮ because (anglo.scale >>> 4)[2] = 3 < major[2] = 4, and Natural is 1 greater than Flat)
     //maybe
-    let i = List.findIndex (fun x -> x = fst tonic) a.Letterforms
-    let ls = (Set.toList s, Set.toList (a.Spacing >>> i))
-    let diff = [ for i in 0..(s.Count - 1) -> (fst ls)[i] - (snd ls)[i] ]
-    let accs = [ for i in diff -> a.Accidentals[((tonic |> snd |> fst) + i)]]
-    let notes = a.Letterforms >@> (i + 1)
-    [ for it in 0..(s.Count - 1) -> (notes[it], a.Accidentals[((tonic |> snd |> fst) + diff[it])]) ] <@< 1
+    // TO-DO: make sure there’s a fallback for spamming the accidentals (3-flat etc.)
+    let index = List.findIndex (fun x -> x = fst tonic) a.Letterforms
+    let delta = tonic |> snd |> fst
+    let notes = a.Letterforms >@> (index + 1)
+    [ for it in 0..(s.Count - 1) -> ( notes[it], a.Accidentals[delta + (Set.toList s)[it] - (Set.toList (a.Spacing >>> index))[it]] ) ] <@< 1

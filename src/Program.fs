@@ -31,7 +31,14 @@ let CFlat : PitchClass = ("C", Flat)
 let FSharp : PitchClass = ("F", Sharp)
 let BNat : PitchClass = ("B", Natural)
 
-printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
-printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
-printfn "F♯ Lydian: %A" (KeyMapping FSharp (ionian >>> 3) anglo)
-printfn "B Dorian: %A" (KeyMapping BNat (ionian >>> 1) anglo)
+// printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
+// printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
+// printfn "F♯ Lydian: %A" (KeyMapping FSharp (ionian >>> 3) anglo)
+// printfn "B Dorian: %A" (KeyMapping BNat (ionian >>> 1) anglo)
+
+Console.Clear()
+
+printfn "%A" (Console.GetCursorPosition())
+printfn "%A" (Console.GetCursorPosition())
+
+writeAt "⁂" 5 5
