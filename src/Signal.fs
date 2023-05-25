@@ -7,6 +7,7 @@ open Microsoft.FSharp.Data.UnitSystems.SI.UnitNames
        Types and functions for manipulating signals and converting between
        abstract mathematical objects and digital data.
 ***)
+let (|Neg|NonNeg|) input = if input >= 0 then NonNeg else Neg
 
 let tau = 2.0 * Math.PI
 

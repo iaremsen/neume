@@ -38,7 +38,4 @@ let BNat : PitchClass = ("B", Natural)
 
 Console.Clear()
 
-printfn "%A" (Console.GetCursorPosition())
-printfn "%A" (Console.GetCursorPosition())
-
-writeAt "⁂" 5 5
+drawBorder
