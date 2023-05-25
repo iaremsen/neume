@@ -16,18 +16,15 @@ let writeAt (c : Char) ((x, y) : int * int) =
         printfn $"{e.Message}"
 
 let drawBorder =
-    let (oRow, oCol, mRows, mCols) = (Console.CursorTop, Console.CursorLeft,
-                                      Console.WindowHeight - 1, Console.WindowWidth - 1)
-
-    for i in 1..(mCols) do
-        writeAt '═' (i, 0)
-        writeAt '═' (i, mRows)
-
-    for i in 1..(mRows) do
-        writeAt '║' (0, i)
-        writeAt '║' (mCols, i)
+    let (max_y, max_x) = (Console.WindowHeight - 1, Console.WindowWidth - 1)
 
     writeAt '╔' (0, 0)
-    writeAt '╚' (0, mRows)
-    writeAt '╗' (mCols, 0)
-    writeAt '╝' (mCols, mRows)
+    writeAt '╚' (0, max_y)
+    writeAt '╗' (max_x, 0)
+    writeAt '╝' (max_x, max_y)
+    for i in 1..(max_x) do
+        writeAt '═' (i, 0)
+        writeAt '═' (i, max_y)
+    for i in 1..(max_y) do
+        writeAt '║' (0, i)
+        writeAt '║' (max_x, i)
