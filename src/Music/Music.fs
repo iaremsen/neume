@@ -2,7 +2,6 @@ namespace Neume.Music
 
 open System
 open Microsoft.FSharp.Data.UnitSystems.SI.UnitNames
-open MathNet.Numerics
 open Neume.Signal
 
 (***
