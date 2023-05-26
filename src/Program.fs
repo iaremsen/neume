@@ -2,7 +2,6 @@ module Neume.Program
 
 open System
 open Microsoft.FSharp.Data.UnitSystems.SI.UnitNames
-open MathNet.Numerics
 open Neume.Signal
 open Neume.Music.Pitch
 open Neume.Music.Rhythm
@@ -31,11 +30,19 @@ let CFlat : PitchClass = ("C", Flat)
 let FSharp : PitchClass = ("F", Sharp)
 let BNat : PitchClass = ("B", Natural)
 
-// printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
-// printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
+printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
+printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
 // printfn "F♯ Lydian: %A" (KeyMapping FSharp (ionian >>> 3) anglo)
 // printfn "B Dorian: %A" (KeyMapping BNat (ionian >>> 1) anglo)
 
-Console.Clear()
-
-drawBorder
+//////////////////////////////////////////////////////////////////////
+// let mutable cki = Unchecked.defaultof<ConsoleKeyInfo>            //
+// let mutable (x, y) = (Console.WindowHeight, Console.WindowWidth) //
+// Console.Clear()                                                  //
+// drawBorder                                                       //
+// while cki.Key <> ConsoleKey.Escape do                            //
+//     while not Console.KeyAvailable do                            //
+//         Threading.Thread.Sleep 250                               //
+//     cki <- Console.ReadKey true                                  //
+// Console.Clear()                                                  //
+//////////////////////////////////////////////////////////////////////

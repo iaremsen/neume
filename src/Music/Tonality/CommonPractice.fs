@@ -60,7 +60,7 @@ type Chord = Scale // it’s that easy
 let major : Chord = Set.ofList [4;7;12]
 let minor : Chord = Set.ofList [3;7;12]
 
-type Degree = int // ordinal,
+type Degree = int // ordinal
 //type RomanNumeral =
 
 type Letterform = string // best way to do this?
@@ -106,8 +106,8 @@ let KeyMapping (tonic : PitchClass) (s : Scale) (a : Alphabet) =
     // if `tonic` has an accidental, set it (sharp/flat)
     // compare `s` to `a`’s scale, use difference to decide further accidentals (i.e. in D♭ major, D♭ ⇢ E♭ ⇢ F♮ because (anglo.scale >>> 4)[2] = 3 < major[2] = 4, and Natural is 1 greater than Flat)
     //maybe
-    // TO-DO: make sure there’s a fallback for spamming the accidentals (3-flat etc.)
-    let index = List.findIndex (fun x -> x = fst tonic) a.Letterforms
-    let delta = tonic |> snd |> fst
+    // TO-DO: make sure there’s a fallback for spamming accidentals (3×♯/♭ etc.)
+    let index = List.findIndex (fun x -> x = fst tonic) a.Letterforms // pos of tonic in alphabet used
+    let delta = tonic |> snd |> fst // accidental of root note
     let notes = a.Letterforms >@> (index + 1)
     [ for it in 0..(s.Count - 1) -> ( notes[it], a.Accidentals[delta + (Set.toList s)[it] - (Set.toList (a.Spacing >>> index))[it]] ) ] <@< 1
