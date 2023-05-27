@@ -1,6 +1,7 @@
 module Neume.Program
 
 open System
+open System.Runtime.InteropServices
 open Microsoft.FSharp.Data.UnitSystems.SI.UnitNames
 open Neume.Signal
 open Neume.Music.Pitch
@@ -12,6 +13,11 @@ open Neume.TUI
 (***
        The entry point for the software.
 ***)
+
+module Kernel =
+    [<DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)>]
+    extern bool SetConsoleOutputCP(uint32 wCodePageID)
+if Environment.OSVersion.Platform = PlatformID.Win32NT then Kernel.SetConsoleOutputCP 65001u |> ignore
 
 let fundamental : Freq = 440.<hertz>;
 
@@ -30,14 +36,17 @@ let CFlat : PitchClass = ("C", Flat)
 let FSharp : PitchClass = ("F", Sharp)
 let BNat : PitchClass = ("B", Natural)
 
-printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
-printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
+// printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
+// printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
 // printfn "F♯ Lydian: %A" (KeyMapping FSharp (ionian >>> 3) anglo)
 // printfn "B Dorian: %A" (KeyMapping BNat (ionian >>> 1) anglo)
+
+printfn "%A" (ionian |> BinEnc |> BinDcd)
 
 //////////////////////////////////////////////////////////////////////
 // let mutable cki = Unchecked.defaultof<ConsoleKeyInfo>            //
 // let mutable (x, y) = (Console.WindowHeight, Console.WindowWidth) //
+//                                                                  //
 // Console.Clear()                                                  //
 // drawBorder                                                       //
 // while cki.Key <> ConsoleKey.Escape do                            //

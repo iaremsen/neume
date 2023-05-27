@@ -16,16 +16,26 @@ open System
 // TO-DO integrate and make rigid beyond chromatic scale/12EDO
 type Scale = int Set // uint?
 
-let chromatic : Scale = Set.ofList [1..12] // root omitted; last element is the period/modulus of the scale
+let chromatic : Scale = Set.ofList [1..12] // root omitted; last element is the period/modulus (e.g. octave conventionally) of the scale
 let ionian : Scale = Set.ofList [2;4;5;7;9;11;12]
 let pent : Scale = Set.ofList [2;4;7;9;12]
 
 let Period (s : Scale) : int = s.MaximumElement
 
+let inline charToInt c = int c - int '0'
+
 let BinEnc (s : Scale) : int = // a unique, *dense* binary encoding for every scale of any cardinality, as an integer
     [ for n in s -> 2. ** float (n - 1) ] |> List.sum |> int
 
-let ReSeat x offset modulus : int = // determines the relationship of `offset` to `x` mod `modulus`
+let rec BinDcd (x : int) : Scale =
+    Convert.ToString(x, 2).ToCharArray() |> Array.rev |> Array.indexed |> Array.filter(fun (x,y) -> y <> '0') |> Array.map(fun (x,y) -> x * (y |> charToInt) + 1) |> Array.toList |> Scale
+
+let (%.) (s : Scale) (n : int) = (Set.toList s)[n % s.Count]
+let (%>) (s : Scale) (n : int) = s %. (n - 1)
+
+
+
+let ReSeat x offset modulus : int = // determines the relationship of `offset` to `x` (mod `modulus`)
     let diff = x - offset
     match diff > 0 with
         | true -> diff
@@ -33,7 +43,6 @@ let ReSeat x offset modulus : int = // determines the relationship of `offset` t
 
 let (>>>) (s : Scale) (offset : int) : Scale = // modulates a scale; returns the nth mode of a scale; inverts chords
     let index = (offset % s.Count)
-
     match index with
         | 0 -> s
         | _ -> Set.map(fun x -> ReSeat x (Set.toList s).[index - 1] (Period s)) s
@@ -60,15 +69,13 @@ type Chord = Scale // it’s that easy
 let major : Chord = Set.ofList [4;7;12]
 let minor : Chord = Set.ofList [3;7;12]
 
-type Degree = int // ordinal
-//type RomanNumeral =
-
 type Letterform = string // best way to do this?
 type Accidental = int * string
 type Alphabet = { Letterforms : Letterform List;
                   Accidentals : Map<int, string>;
                   Spacing : Scale }
 type PitchClass = Letterform * Accidental
+type Degree = int * Accidental // ordinal
 
 let (>@>) (lf : List<'a>) (offset : int) : List<'a> =
     let index = (offset % lf.Length)
@@ -77,6 +84,8 @@ let (>@>) (lf : List<'a>) (offset : int) : List<'a> =
         | _ -> List.skip index lf @ List.take index lf
 
 let (<@<) lf (offset : int) = lf >@> lf.Length - offset
+
+let reDup str n = ("", List.replicate n str) ||> List.fold (fun s v -> s + v)
 
 let DblFlat : Accidental = (-2, "𝄫")
 let Flat : Accidental = (-1, "♭")
@@ -101,13 +110,26 @@ type Quality = Major | Minor
 
 type Key = PitchClass * Quality
 
+// TO-DO: make sure there’s a fallback for spamming accidentals, 3♯/♭ &c.
 let KeyMapping (tonic : PitchClass) (s : Scale) (a : Alphabet) =
-    // cycle both `a`’s Letterform List and `a`’s Scale until the first element of the former matches `tonic.fst`
-    // if `tonic` has an accidental, set it (sharp/flat)
-    // compare `s` to `a`’s scale, use difference to decide further accidentals (i.e. in D♭ major, D♭ ⇢ E♭ ⇢ F♮ because (anglo.scale >>> 4)[2] = 3 < major[2] = 4, and Natural is 1 greater than Flat)
-    //maybe
-    // TO-DO: make sure there’s a fallback for spamming accidentals (3×♯/♭ etc.)
-    let index = List.findIndex (fun x -> x = fst tonic) a.Letterforms // pos of tonic in alphabet used
+    // cycle through both `a`’s Letterform List and `a`’s Scale until the first
+    // element of the former matches `tonic.fst`
+    // if `tonic` has an accidental, set it to all notes of the scale
+    //
+    // compare `s` to `a`’s scale, use difference to decide further accidentals
+    ////// e.g. D♭ major ⇥ [D♭;E♭;F♮;G♭;A♭;B♭;C♮] ∵
+    ////// D♭_Dorian = A_Minor >>> 4 ||> ♭ = [D♭;E♭;F♭;G♭;A♭;B♭;C♭]⸻
+    ////// dorian[2] = 3 < major[2] = 4⸻
+    let s_l = Set.toList s
+    let pivot = List.findIndex (fun x -> x = fst tonic) a.Letterforms // pos of tonic in alphabet used
     let delta = tonic |> snd |> fst // accidental of root note
-    let notes = a.Letterforms >@> (index + 1)
-    [ for it in 0..(s.Count - 1) -> ( notes[it], a.Accidentals[delta + (Set.toList s)[it] - (Set.toList (a.Spacing >>> index))[it]] ) ] <@< 1
+    let notes = a.Letterforms >@> (pivot + 1)
+    [ for i in 0..(s_l.Length - 1) -> (notes[i], a.Accidentals[delta + s_l[i] - (Set.toList (a.Spacing >>> pivot))[i]] ) ] <@< 1
+
+//let ContainsSubset (x : Scale) (y : Scale) =
+    // etc
+let RootTriad (s : Scale) =
+    Scale (Set.empty.Add(0).Add(s %> 2).Add(s %> 4))
+
+let Triads (s : Scale) =
+    [for m in (Modes s) -> RootTriad m]
