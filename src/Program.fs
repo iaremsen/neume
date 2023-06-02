@@ -21,27 +21,20 @@ if Environment.OSVersion.Platform = PlatformID.Win32NT then Kernel.SetConsoleOut
 
 let fundamental : Freq = 440.<hertz>;
 
-let min2 = 16M / 15M
-let maj3 = 5M / 4M
-let per4 = 4M / 3M
-let dim6 = 40M / 27M
-let neu7 = 11M / 6M
+let DFlat : PitchClass = {name = "D"; acc = Flat}
+let CFlat : PitchClass = {name = "C"; acc = Flat}
+let FSharp : PitchClass = {name = "F"; acc = Sharp}
+let BNat : PitchClass = {name = "B"; acc = Natural}
 
-let tun : Tuning = [min2; maj3; per4; dim6; neu7; octave]
+let BMaj : Tonality = (anglo, BNat, ionian)
 
-let names = ["Ionian";"Dorian";"Phrygian";"Lydian";"Mixolydian";"Aeolian";"Locrian"]
+let MinorThird : Interval = {step = 3; size = 3}
+// printfn "D♭ Diatonic: %A" (KeyMapping DFlat diatonic anglo)
+// printfn "C♭ Aeolian: %A" (KeyMapping CFlat (diatonic >>> 5) anglo)
+// printfn "F♯ Lydian: %A" (KeyMapping FSharp (diatonic >>> 3) anglo)
+// printfn "B Dorian: %A" (KeyMapping BNat (diatonic >>> 1) anglo)
 
-let DFlat : PitchClass = ("D", Flat)
-let CFlat : PitchClass = ("C", Flat)
-let FSharp : PitchClass = ("F", Sharp)
-let BNat : PitchClass = ("B", Natural)
-
-// printfn "D♭ Ionian: %A" (KeyMapping DFlat ionian anglo)
-// printfn "C♭ Aeolian: %A" (KeyMapping CFlat (ionian >>> 5) anglo)
-// printfn "F♯ Lydian: %A" (KeyMapping FSharp (ionian >>> 3) anglo)
-// printfn "B Dorian: %A" (KeyMapping BNat (ionian >>> 1) anglo)
-
-printfn "%A" (ionian |> BinEnc |> BinDcd)
+printfn "%A" (IntSpelling DFlat MinorThird anglo)
 
 //////////////////////////////////////////////////////////////////////
 // let mutable cki = Unchecked.defaultof<ConsoleKeyInfo>            //

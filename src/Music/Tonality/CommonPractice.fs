@@ -11,29 +11,11 @@ open System
 
 (***
         SCALES
+        // TO-DO: design when exactly to count from 0 and when to count from 1
+        // (e.g. scale[0] is the *unison*, scale[1] is the *second*, could be confusing)
 ***)
 
-// TO-DO integrate and make rigid beyond chromatic scale/12EDO
-type Scale = int Set // uint?
-
-let chromatic : Scale = Set.ofList [1..12] // root omitted; last element is the period/modulus (e.g. octave conventionally) of the scale
-let ionian : Scale = Set.ofList [2;4;5;7;9;11;12]
-let pent : Scale = Set.ofList [2;4;7;9;12]
-
-let Period (s : Scale) : int = s.MaximumElement
-
-let inline charToInt c = int c - int '0'
-
-let BinEnc (s : Scale) : int = // a unique, *dense* binary encoding for every scale of any cardinality, as an integer
-    [ for n in s -> 2. ** float (n - 1) ] |> List.sum |> int
-
-let rec BinDcd (x : int) : Scale =
-    Convert.ToString(x, 2).ToCharArray() |> Array.rev |> Array.indexed |> Array.filter(fun (x,y) -> y <> '0') |> Array.map(fun (x,y) -> x * (y |> charToInt) + 1) |> Array.toList |> Scale
-
-let (%.) (s : Scale) (n : int) = (Set.toList s)[n % s.Count]
-let (%>) (s : Scale) (n : int) = s %. (n - 1)
-
-
+// TO-DO: integrate and make rigid beyond chromatic scale/12EDO
 
 let ReSeat x offset modulus : int = // determines the relationship of `offset` to `x` (mod `modulus`)
     let diff = x - offset
@@ -41,95 +23,169 @@ let ReSeat x offset modulus : int = // determines the relationship of `offset` t
         | true -> diff
         | false -> diff + modulus
 
-let (>>>) (s : Scale) (offset : int) : Scale = // modulates a scale; returns the nth mode of a scale; inverts chords
-    let index = (offset % s.Count)
-    match index with
-        | 0 -> s
-        | _ -> Set.map(fun x -> ReSeat x (Set.toList s).[index - 1] (Period s)) s
+type Scale(lst : List<int>) =
+    member this.lst = lst
+    member this.set = Set.ofList lst
+    member this.period = this.set.MaximumElement
+    member this.card = this.set.Count
 
-let (<<<) (s : Scale) (offset : int) = s >>> s.Count - offset
+    member this.bin = [ for n in this.set -> 2. ** float (n - 1) ] |> List.sum |> int
+    member this.bitfield = Convert.ToString(this.bin, 2).ToCharArray() |> Array.map(fun x -> (int x - int '0')) |> Array.rev |> Array.toList
+
+//    let steps = [ for i in 0..(card - 1) -> abs((s %. i) - (s %. (i - 1))) ]
+
+ // modulates a scale; returns the nth mode of a scale (counting from zero, aeolian is `diatonic |> mode 6`); inverts chords
+    static member (>>>) (s : Scale, offset : int) : Scale =
+        let index = offset % s.card
+        match index with
+            | 0 -> s
+            | _ -> Scale(Set.toList(Set.map(fun x -> ReSeat x s.lst[index - 1] (s.period)) s.set))
+
+    static member (<<<) (s : Scale, offset : int) = s >>> s.card - offset
+    new() = Scale([0])
+
+
+let mode (s: Scale) (n : int) = s >>> (n - 1)
+
+// not sure what type safety rammifications i want here, it’s really quite philosophical
+let (|Cycle|Fragment|) (s : Scale) = if s.set.MinimumElement = 0 then Fragment else Cycle
+
+let chromatic = Scale([1..12]) // root omitted (i.e. Cycle as above); last element is the period/modulus (e.g. the octave, conventionally) of the scale
+let diatonic = Scale([2;4;5;7;9;11;12])
+let pent = Scale([2;4;7;9;12])
+let fragHWH = Scale([0;1;3;4]) // hmm.
+
+// a unique, *dense* binary encoding for every scale of any cardinality, as an integer
+
+
+
+
+//let BinDcd (x : int) : Scale =
+  //  x |> List.indexed |> List.filter(fun (x,y) -> y <> 0) |> List.map(fun (x,y) -> (x * y) + 1) |> Scale()
+
+let (%.) (s : Scale) (n : int) = (s.lst)[abs(n % s.card)]
+let (%>) (s : Scale) (n : int) = s %. (n - 2) // music counts from 1; make sure this works with Cycle and Fragment
+
+let StepSize (s : Scale) =
+    let lst = s.lst
+    [ for i in 0..(s.card - 1) -> abs((s %. i) - (s %. (i - 1)))]
+
+let ionian : Scale = mode diatonic 1
+let dorian : Scale = mode diatonic 2
+let phrygian : Scale = mode diatonic 3
+let lydian : Scale = mode diatonic 4
+let mixolydian : Scale = mode diatonic 5
+let aeolian : Scale = mode diatonic 6
+let locrian : Scale = mode diatonic 7
 
 let Modes(s : Scale) : List<Scale> = // returns all the modes of a scale; all the inversions of a chord.
-    [ for i in 0..(s.Count-1) -> s >>> i ]
+    [ for i in 1..(s.card) -> mode s i ]
 
-let PrimeMode (s : Scale) : Scale = // smallest binary-encoded/most "left-compact" mode; root inversion of a chord
-    let x = [ for i in Modes s -> (BinEnc i, i) ]
-    (List.sort x)[0] |> snd
+//let PrimeMode (s : Scale) : Scale = // smallest binary-encoded/most "left-compact" mode; root inversion of a chord
 
-//let ForteNo (s : Scale) =
-
+// let ForteNo (s : Scale) =
+//
 // let isEnharmonic =
-// TO-DO
 
 (***
         CHORDS
 ***)
+// it’s that easy
+type Chord = Scale
+// i think it’s usually best to work with chords as full scales/treat them cyclically, because they are invertible and octave-displacable/create a harmonic space as scale subsets. but i want to be able to think of them as broken, proximately-oriented, melodic ‘runs’ and have that work too.
+let major = Chord([4;7;12])
+let minor = Chord([3;7;12])
 
-type Chord = Scale // it’s that easy
-let major : Chord = Set.ofList [4;7;12]
-let minor : Chord = Set.ofList [3;7;12]
+type Letterform = string
+type Accidental =
+    { delta : int
+      glyph : string }
+      member this.toTup() = (this.delta, this.glyph)
 
-type Letterform = string // best way to do this?
-type Accidental = int * string
-type Alphabet = { Letterforms : Letterform List;
-                  Accidentals : Map<int, string>;
-                  Spacing : Scale }
-type PitchClass = Letterform * Accidental
-type Degree = int * Accidental // ordinal
+type Alphabet = { forms   : List<Letterform>;
+                  acc     : List<Accidental>;
+                  spacing : Scale }
+type PitchClass =
+    { name : Letterform
+      acc : Accidental }
+      member this.toStr() = this.name + this.acc.glyph
 
-let (>@>) (lf : List<'a>) (offset : int) : List<'a> =
-    let index = (offset % lf.Length)
+// ordinal step, counting from one, total size (e.g. 4 for a major 3rd), counting from zero
+type Interval = { step : int; size: int }
+
+let inline (>@>) (lst : List<'a>) (offset : int) : List<'a> =
+    let index = (offset % lst.Length)
     match index with
-        | 0 -> lf
-        | _ -> List.skip index lf @ List.take index lf
+        | 0 -> lst
+        | _ -> List.skip index lst @ List.take index lst
 
-let (<@<) lf (offset : int) = lf >@> lf.Length - offset
+let inline (<@<) lst (offset : int) = lst >@> lst.Length - offset
+
+let inline (>>>) (abc : Alphabet) (n : int) =
+    let xyz : Alphabet = { forms = (abc.forms >@> n + 1);
+                          acc = (abc.acc >@> n + 1);
+                          spacing = (mode abc.spacing n) }
+    xyz
 
 let reDup str n = ("", List.replicate n str) ||> List.fold (fun s v -> s + v)
 
-let DblFlat : Accidental = (-2, "𝄫")
-let Flat : Accidental = (-1, "♭")
-let Natural : Accidental = (0, "♮")
-let Sharp : Accidental = (1, "♯")
-let DblSharp : Accidental = (2, "𝄪")
+let DblFlat  : Accidental = { delta = -2; glyph = "𝄫" }
+let Flat     : Accidental = { delta = -1; glyph = "♭" }
+let Natural  : Accidental = { delta =  0; glyph = "♮" }
+let Sharp    : Accidental = { delta =  1; glyph = "♯" }
+let DblSharp : Accidental = { delta =  2; glyph = "𝄪" }
 
-let anglo : Alphabet = {Letterforms = [for c in 'A'..'G' -> string c];
-                        Accidentals = Map[DblFlat;Flat;Natural;Sharp;DblSharp];
-                        Spacing = ionian >>> 5}
-let german : Alphabet = {Letterforms = ["A";"B";"H";"C";"D";"E";"F";"G"];
-                         Accidentals = Map[DblFlat;Flat;Natural;Sharp;DblSharp];
-                         Spacing = (ionian >>> 5).Add(4)}
-let solfege : Alphabet = {Letterforms = ["do";"re";"mi";"fa";"sol";"la";"ti"];
-                          Accidentals = Map[DblFlat;Flat;Natural;Sharp;DblSharp];
-                          Spacing = ionian}
-let hindustani : Alphabet = {Letterforms = ["सा";"रे";"ग";"म";"प";"ध";"नि"];
-                             Accidentals = Map[];
-                             Spacing = ionian}
+let angloAcc = [DblFlat;Flat;Natural;Sharp;DblSharp]
+
+let anglo : Alphabet = {forms = [for c in 'A'..'G' -> string c];
+                        acc = angloAcc;
+                        spacing = (mode diatonic 6)}
+let german : Alphabet = {forms = ["A";"B";"H";"C";"D";"E";"F";"G"];
+                         acc = angloAcc;
+                         spacing = Scale((mode diatonic 6).set.Add(4) |> Set.toList)}
+let solfege : Alphabet = {forms = ["do";"re";"mi";"fa";"sol";"la";"ti"];
+                          acc = angloAcc;
+                          spacing = diatonic}
+let hindustani : Alphabet = {forms = ["सा";"रे";"ग";"म";"प";"ध";"नि"];
+                             acc = [];
+                             spacing = diatonic}
 
 type Quality = Major | Minor
-
+type Tonality = Alphabet * PitchClass * Scale
 type Key = PitchClass * Quality
 
+// produces the PitchClass
+let IntSpelling (from : PitchClass) (interval : Interval) (abc : Alphabet) =
+    let i = List.findIndex (fun x -> x = from.name) abc.forms
+    let gap = interval.step
+    let j = gap + i
+//    let m = (abc.spacing >>> i |> Set.toList)[..gap]
+    ((abc.forms >@> j)[0], i, j, gap)
+
+//let Distance (a : PitchClass) (b : Pitch Class) (abc : Alphabet) : int =
+
+
 // TO-DO: make sure there’s a fallback for spamming accidentals, 3♯/♭ &c.
-let KeyMapping (tonic : PitchClass) (s : Scale) (a : Alphabet) =
-    // cycle through both `a`’s Letterform List and `a`’s Scale until the first
+let KeyMapping (tonic : PitchClass) (s : Scale) (abc : Alphabet) =
+    // cycle through both `a`’s List<Letterform> and `abc`’s Scale until the first
     // element of the former matches `tonic.fst`
     // if `tonic` has an accidental, set it to all notes of the scale
     //
-    // compare `s` to `a`’s scale, use difference to decide further accidentals
+    // compare `s` to `abc`’s Scale, use difference to decide further accidentals
     ////// e.g. D♭ major ⇥ [D♭;E♭;F♮;G♭;A♭;B♭;C♮] ∵
     ////// D♭_Dorian = A_Minor >>> 4 ||> ♭ = [D♭;E♭;F♭;G♭;A♭;B♭;C♭]⸻
-    ////// dorian[2] = 3 < major[2] = 4⸻
-    let s_l = Set.toList s
-    let pivot = List.findIndex (fun x -> x = fst tonic) a.Letterforms // pos of tonic in alphabet used
-    let delta = tonic |> snd |> fst // accidental of root note
-    let notes = a.Letterforms >@> (pivot + 1)
-    [ for i in 0..(s_l.Length - 1) -> (notes[i], a.Accidentals[delta + s_l[i] - (Set.toList (a.Spacing >>> pivot))[i]] ) ] <@< 1
+    ////// dorian[2] = 3 < diatonic[2] = 4
+    let l = s.lst
+    let pivot = List.findIndex (fun x -> x = tonic.name) abc.forms // pos of tonic in alphabet used
+//    let xyz = abcMode abc pivot
+    let delta = tonic.acc.delta // accidental of root note
+    0
+
+    //[ for i in 0..(Card s - 1) -> ] <@< 1
 
 //let ContainsSubset (x : Scale) (y : Scale) =
     // etc
-let RootTriad (s : Scale) =
-    Scale (Set.empty.Add(0).Add(s %> 2).Add(s %> 4))
+// TO-DO: reimplenent in terms of count-from-oneordinal interval №s
+let RootTriad (s : Scale) = Set.empty.Add(s %> 3).Add(s %> 5).Add(s.period) |> Set.toList |> Scale
 
-let Triads (s : Scale) =
-    [for m in (Modes s) -> RootTriad m]
+let Triads (s : Scale) = [for m in (Modes s) -> RootTriad m]
