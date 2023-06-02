@@ -16,6 +16,13 @@ open System
 ***)
 
 // TO-DO: integrate and make rigid beyond chromatic scale/12EDO
+let inline (>@>) (lst : List<'a>) (offset : int) : List<'a> =
+    let index = (offset % lst.Length)
+    match index with
+        | 0 -> lst
+        | _ -> List.skip index lst @ List.take index lst
+
+let inline (<@<) lst (offset : int) = lst >@> lst.Length - offset
 
 let ReSeat x offset modulus : int = // determines the relationship of `offset` to `x` (mod `modulus`)
     let diff = x - offset
@@ -24,11 +31,12 @@ let ReSeat x offset modulus : int = // determines the relationship of `offset` t
         | false -> diff + modulus
 
 type Scale(lst : List<int>) =
-    member this.lst = lst
     member this.set = Set.ofList lst
+    member this.lst = Set.toList this.set
     member this.period = this.set.MaximumElement
     member this.card = this.set.Count
 
+// a unique, *dense* binary encoding for every scale of any cardinality, as an integer
     member this.bin = [ for n in this.set -> 2. ** float (n - 1) ] |> List.sum |> int
     member this.bitfield = Convert.ToString(this.bin, 2).ToCharArray() |> Array.map(fun x -> (int x - int '0')) |> Array.rev |> Array.toList
 
@@ -42,10 +50,17 @@ type Scale(lst : List<int>) =
             | _ -> Scale(Set.toList(Set.map(fun x -> ReSeat x s.lst[index - 1] (s.period)) s.set))
 
     static member (<<<) (s : Scale, offset : int) = s >>> s.card - offset
+    static member (%.) (s : Scale, n : int) = (s.lst)[abs(n % s.card)]
+    static member (%>) (s : Scale, n : int) = s %. (n - 2) // music counts from 1; make sure this works with Cycle and Fragment
+
+    static member (+) (s : Scale, n : int) = Scale(s.lst @ [n])
+    static member (+) (s : Scale, c : Scale) = Scale(s.lst @ c.lst)
+
+    static member steps (s : Scale) = [ for i in 0..(s.card - 1) -> abs((s %. i) - (s %. (i - 1)))]
+    member this.mode (n : int) = Scale(this.lst) >>> (n - 1)
+
     new() = Scale([0])
 
-
-let mode (s: Scale) (n : int) = s >>> (n - 1)
 
 // not sure what type safety rammifications i want here, it’s really quite philosophical
 let (|Cycle|Fragment|) (s : Scale) = if s.set.MinimumElement = 0 then Fragment else Cycle
@@ -55,31 +70,21 @@ let diatonic = Scale([2;4;5;7;9;11;12])
 let pent = Scale([2;4;7;9;12])
 let fragHWH = Scale([0;1;3;4]) // hmm.
 
-// a unique, *dense* binary encoding for every scale of any cardinality, as an integer
-
-
-
-
 //let BinDcd (x : int) : Scale =
   //  x |> List.indexed |> List.filter(fun (x,y) -> y <> 0) |> List.map(fun (x,y) -> (x * y) + 1) |> Scale()
 
-let (%.) (s : Scale) (n : int) = (s.lst)[abs(n % s.card)]
-let (%>) (s : Scale) (n : int) = s %. (n - 2) // music counts from 1; make sure this works with Cycle and Fragment
 
-let StepSize (s : Scale) =
-    let lst = s.lst
-    [ for i in 0..(s.card - 1) -> abs((s %. i) - (s %. (i - 1)))]
+let ionian : Scale = diatonic.mode(1)
+let dorian : Scale = diatonic.mode(2)
+let phrygian : Scale = diatonic.mode(3)
+let lydian : Scale = diatonic.mode(4)
+let mixolydian : Scale = diatonic.mode(5)
+let aeolian : Scale = diatonic.mode(6)
+let locrian : Scale = diatonic.mode(7)
 
-let ionian : Scale = mode diatonic 1
-let dorian : Scale = mode diatonic 2
-let phrygian : Scale = mode diatonic 3
-let lydian : Scale = mode diatonic 4
-let mixolydian : Scale = mode diatonic 5
-let aeolian : Scale = mode diatonic 6
-let locrian : Scale = mode diatonic 7
-
-let Modes(s : Scale) : List<Scale> = // returns all the modes of a scale; all the inversions of a chord.
-    [ for i in 1..(s.card) -> mode s i ]
+// returns all the modes of a scale; all the inversions of a chord.
+let Modes(s : Scale) : List<Scale> =
+    [ for i in 1..(s.card) -> s.mode(i) ]
 
 //let PrimeMode (s : Scale) : Scale = // smallest binary-encoded/most "left-compact" mode; root inversion of a chord
 
@@ -90,9 +95,10 @@ let Modes(s : Scale) : List<Scale> = // returns all the modes of a scale; all th
 (***
         CHORDS
 ***)
+
+// i think it’s usually best to work with chords as full scales/treat them cyclically, because they are invertible and octave-displacable/create a harmonic space as scale subsets. but i want to be able to think of them as broken, proximately-oriented, melodic ‘runs’ and have that work too.
 // it’s that easy
 type Chord = Scale
-// i think it’s usually best to work with chords as full scales/treat them cyclically, because they are invertible and octave-displacable/create a harmonic space as scale subsets. but i want to be able to think of them as broken, proximately-oriented, melodic ‘runs’ and have that work too.
 let major = Chord([4;7;12])
 let minor = Chord([3;7;12])
 
@@ -113,18 +119,11 @@ type PitchClass =
 // ordinal step, counting from one, total size (e.g. 4 for a major 3rd), counting from zero
 type Interval = { step : int; size: int }
 
-let inline (>@>) (lst : List<'a>) (offset : int) : List<'a> =
-    let index = (offset % lst.Length)
-    match index with
-        | 0 -> lst
-        | _ -> List.skip index lst @ List.take index lst
-
-let inline (<@<) lst (offset : int) = lst >@> lst.Length - offset
 
 let inline (>>>) (abc : Alphabet) (n : int) =
     let xyz : Alphabet = { forms = (abc.forms >@> n + 1);
                           acc = (abc.acc >@> n + 1);
-                          spacing = (mode abc.spacing n) }
+                          spacing = (abc.spacing.mode(n)) }
     xyz
 
 let reDup str n = ("", List.replicate n str) ||> List.fold (fun s v -> s + v)
@@ -139,10 +138,10 @@ let angloAcc = [DblFlat;Flat;Natural;Sharp;DblSharp]
 
 let anglo : Alphabet = {forms = [for c in 'A'..'G' -> string c];
                         acc = angloAcc;
-                        spacing = (mode diatonic 6)}
+                        spacing = (diatonic.mode(6))}
 let german : Alphabet = {forms = ["A";"B";"H";"C";"D";"E";"F";"G"];
                          acc = angloAcc;
-                         spacing = Scale((mode diatonic 6).set.Add(4) |> Set.toList)}
+                         spacing = diatonic.mode(6) + 4}
 let solfege : Alphabet = {forms = ["do";"re";"mi";"fa";"sol";"la";"ti"];
                           acc = angloAcc;
                           spacing = diatonic}
