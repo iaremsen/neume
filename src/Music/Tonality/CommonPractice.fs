@@ -16,13 +16,13 @@ open System
 ***)
 
 // TO-DO: integrate and make rigid beyond chromatic scale/12EDO
-let inline (>@>) (lst : List<'a>) (offset : int) : List<'a> =
+let inline (>>>) (lst : List<'a>) (offset : int) : List<'a> =
     let index = (offset % lst.Length)
     match index with
         | 0 -> lst
         | _ -> List.skip index lst @ List.take index lst
 
-let inline (<@<) lst (offset : int) = lst >@> lst.Length - offset
+let inline (<<<) lst (offset : int) = lst >>> lst.Length - offset
 
 let ReSeat x offset modulus : int = // determines the relationship of `offset` to `x` (mod `modulus`)
     let diff = x - offset
@@ -39,8 +39,6 @@ type Scale(lst : List<int>) =
 // a unique, *dense* binary encoding for every scale of any cardinality, as an integer
     member this.bin = [ for n in this.set -> 2. ** float (n - 1) ] |> List.sum |> int
     member this.bitfield = Convert.ToString(this.bin, 2).ToCharArray() |> Array.map(fun x -> (int x - int '0')) |> Array.rev |> Array.toList
-
-//    let steps = [ for i in 0..(card - 1) -> abs((s %. i) - (s %. (i - 1))) ]
 
  // modulates a scale; returns the nth mode of a scale (counting from zero, aeolian is `diatonic |> mode 6`); inverts chords
     static member (>>>) (s : Scale, offset : int) : Scale =
@@ -71,8 +69,7 @@ let pent = Scale([2;4;7;9;12])
 let fragHWH = Scale([0;1;3;4]) // hmm.
 
 //let BinDcd (x : int) : Scale =
-  //  x |> List.indexed |> List.filter(fun (x,y) -> y <> 0) |> List.map(fun (x,y) -> (x * y) + 1) |> Scale()
-
+//  x |> List.indexed |> List.filter(fun (x,y) -> y <> 0) |> List.map(fun (x,y) -> (x * y) + 1) |> Scale()
 
 let ionian : Scale = diatonic.mode(1)
 let dorian : Scale = diatonic.mode(2)
@@ -121,8 +118,8 @@ type Interval = { step : int; size: int }
 
 
 let inline (>>>) (abc : Alphabet) (n : int) =
-    let xyz : Alphabet = { forms = (abc.forms >@> n + 1);
-                          acc = (abc.acc >@> n + 1);
+    let xyz : Alphabet = { forms = (abc.forms >>> n + 1);
+                          acc = (abc.acc >>> n + 1);
                           spacing = (abc.spacing.mode(n)) }
     xyz
 
@@ -159,7 +156,7 @@ let IntSpelling (from : PitchClass) (interval : Interval) (abc : Alphabet) =
     let gap = interval.step
     let j = gap + i
 //    let m = (abc.spacing >>> i |> Set.toList)[..gap]
-    ((abc.forms >@> j)[0], i, j, gap)
+    ((abc.forms >>> j)[0], i, j, gap)
 
 //let Distance (a : PitchClass) (b : Pitch Class) (abc : Alphabet) : int =
 
@@ -180,7 +177,7 @@ let KeyMapping (tonic : PitchClass) (s : Scale) (abc : Alphabet) =
     let delta = tonic.acc.delta // accidental of root note
     0
 
-    //[ for i in 0..(Card s - 1) -> ] <@< 1
+    //[ for i in 0..(Card s - 1) -> ] <<< 1
 
 //let ContainsSubset (x : Scale) (y : Scale) =
     // etc
