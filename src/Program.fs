@@ -34,7 +34,10 @@ let MinorThird : Interval = {step = 3; size = 3}
 // printfn "F♯ Lydian: %A" (KeyMapping FSharp (diatonic >>> 3) anglo)
 // printfn "B Dorian: %A" (KeyMapping BNat (diatonic >>> 1) anglo)
 
-printfn "%A" (IntSpelling DFlat MinorThird anglo)
+Spelling {name = "C"; acc = Natural} {step = 4; size = 6} anglo
+Spelling {name = "C"; acc = Natural} {step = 5; size = 6} anglo
+Spelling {name = "C"; acc = Natural} {step = 2; size = 3} anglo
+Spelling {name = "C"; acc = Natural} {step = 3; size = 3} anglo
 
 //////////////////////////////////////////////////////////////////////
 // let mutable cki = Unchecked.defaultof<ConsoleKeyInfo>            //
