@@ -37,7 +37,7 @@ let MinorThird : Interval = {step = 3; size = 3}
 Spelling {name = "C"; acc = Natural} {step = 4; size = 6} anglo
 Spelling {name = "C"; acc = Natural} {step = 5; size = 6} anglo
 Spelling {name = "C"; acc = Natural} {step = 2; size = 3} anglo
-Spelling {name = "C"; acc = Natural} {step = 3; size = 8} anglo
+Spelling {name = "C"; acc = Natural} {step = 10; size = 8} anglo
 
 //////////////////////////////////////////////////////////////////////
 // let mutable cki = Unchecked.defaultof<ConsoleKeyInfo>            //
