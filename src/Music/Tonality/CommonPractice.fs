@@ -72,7 +72,7 @@ let Modes(s : Scale) = [ for i in 1..s.card -> s.mode(i) ]
 type Chord = Scale
 
 type Letterform = string
-type Accidental =
+type Accidental = // TODO : accidental access function
     { delta : int; glyph : string }
     member this.tup() = (this.delta, this.glyph)
 
@@ -85,8 +85,14 @@ type Interval = { step : int; size: int }
 type Alphabet(glyphs  : List<Letterform>,
               accs    : List<Accidental>,
               spacing : Scale) =
-    member this.glyphs = glyphs
     member this.accs = accs
+    member this.accmap : Map<int, Accidental> = [ for x in this.accs -> (x.delta, x) ] |> Map.ofList
+    member this.acc (d : int) : Accidental =
+        if this.accmap.ContainsKey d then
+            this.accmap[d]
+        else
+            { delta = d; glyph = (reDup (this.accmap[d / abs(d)].glyph) (abs(d))) }
+    member this.glyphs = glyphs
     member this.spacing = spacing
     member this.card = spacing.card
 
@@ -107,7 +113,7 @@ let Spelling (root : PitchClass) (ivl : Interval) (a : Alphabet) : PitchClass =
 
     let delta = root.acc.delta - ((abc.spacing.lst[ivl.step-2]) - ivl.size)
 
-    let res_acc = List.find (fun x -> x.delta = delta) a.accs
+    let res_acc = a.acc(delta)
     let res : PitchClass = {name = xyz.glyphs[0]; acc = res_acc}
     printfn "a %A up from %A is %A" (ivl.step, ivl.size) root.s res.s
     res
